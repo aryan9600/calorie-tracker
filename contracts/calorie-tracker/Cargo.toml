@@ -1,0 +1,13 @@
+[package]
+name = "calorie-tracker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+soroban-sdk = "20.0.0-rc2.2"
+
+[dev_dependencies]
+soroban-sdk = { version = "20.0.0-rc2.2" }
+
+[lib]
+crate-type = ["cdylib"]
