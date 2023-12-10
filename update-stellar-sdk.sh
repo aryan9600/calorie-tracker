@@ -2,9 +2,9 @@
 if [ ! -f ./bin/soroban ]; then
     os=$(uname -s)
     if [[ "$os" == "Darwin" ]]; then
-        wget -O soroban-cli.tar.gz https://github.com/stellar/soroban-tools/releases/download/v20.0.1/soroban-cli-20.0.1-aarch64-apple-darwin.tar.gz
+        curl -SsL https://github.com/stellar/soroban-tools/releases/download/v20.0.1/soroban-cli-20.0.1-aarch64-apple-darwin.tar.gz -o soroban-cli.tar.gz 
     else
-        wget -O soroban-cli.tar.gz https://github.com/stellar/soroban-tools/releases/download/v20.0.1/soroban-cli-20.0.1-x86_64-unknown-linux-gnu.tar.gz
+        curl -SsL https://github.com/stellar/soroban-tools/releases/download/v20.0.1/soroban-cli-20.0.1-x86_64-unknown-linux-gnu.tar.gz -o soroban-cli.tar.gz
     fi
     tar -xf soroban-cli.tar.gz && mv soroban ./bin
     rm soroban-cli.tar.gz
