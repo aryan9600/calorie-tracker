@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 80vw;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">The UI</h1>
+        <button id="connectWallet" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+            Connect wallet
+        </button>
+        <div class="mb-4">
+            <label for="addCalories" class="block text-gray-700 text-sm font-bold mb-2">Add calories:</label>
+            <input id="addCalories" type="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <div class="mb-4">
+            <label for="subtractCalories" class="block text-gray-700 text-sm font-bold mb-2">Subtract calories:</label>
+            <input id="subtractCalories" type="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Your calories for the day:</label>
+            <div id="calorieCount" class="shadow border rounded py-2 px-3 text-gray-700">0</div>
+        </div>
+        <button id="getWeeklyChart" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4">
+            Get weekly chart
+        </button>
+        <div class="chart-container">
+            <canvas id="calorieChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let calorieCount = 0;
+
+        document.getElementById('addCalories').addEventListener('input', function(e) {
+            calorieCount += parseInt(e.target.value);
+            updateCalorieCount();
+        });
+
+        document.getElementById('subtractCalories').addEventListener('input', function(e) {
+            calorieCount -= parseInt(e.target.value);
+            updateCalorieCount();
+        });
+
+        function updateCalorieCount() {
+            document.getElementById('calorieCount').textContent = calorieCount;
+        }
+
+        document.getElementById('getWeeklyChart').addEventListener('click', function() {
+            const ctx = document.getElementById('calorieChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['01/01', '02/01', '03/01', '04/01', '05/01', '06/01', '07/01'],
+                    datasets: [{
+                        label: 'Calories',
+                        data: [0, 100, -200, 300, -100, 200, -300],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
