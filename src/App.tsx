@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { isConnected, getPublicKey } from "@stellar/freighter-api";
-import { Contract } from "calorie-tracker-client";
+import { Contract, networks } from "calorie-tracker-client";
 import DatePicker from "react-datepicker";
 import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
@@ -22,8 +22,8 @@ const addressObject = {
 };
 
 const tracker = new Contract({
-  contractId: "CDD573LABMIFC6Q4DVAUYPTWAPBWRIXIH2JPUVVJOLCRDC3OVWBWBH4Q",
-  networkPassphrase: "Test SDF Future Network ; October 2022",
+  contractId: networks.futurenet.contractId,
+  networkPassphrase: networks.futurenet.networkPassphrase,
   rpcUrl: "https://rpc-futurenet.stellar.org/",
 });
 
