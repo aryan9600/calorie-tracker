@@ -8,39 +8,43 @@ import './App.css';
 
 import "react-datepicker/dist/react-datepicker.css";
 
-
+// Get the user's public key, if Freigher is installed.
 let addressLookup = (async () => {
   if (await isConnected()) return getPublicKey()
 })();
 
 let address: string;
 
-// returning the same object identity every time avoids unnecessary re-renders
+// Returning the same object identity every time avoids unnecessary re-renders
 const addressObject = {
   address: '',
   displayName: '',
 };
 
+// The calorie tracker contract object.
 const tracker = new Contract({
   contractId: networks.futurenet.contractId,
   networkPassphrase: networks.futurenet.networkPassphrase,
   rpcUrl: "https://rpc-futurenet.stellar.org/",
 });
 
+// Accepts an address and returns an addressObject.
 const addressToHistoricObject = (address: string) => {
   addressObject.address = address;
   addressObject.displayName = `${address.slice(0, 4)}...${address.slice(-4)}`;
   return addressObject
 };
 
+// Options for the weekly chart.
 const chartOptions = {
   scales: {
     y: {
-      beginAtZero: false, // Set to true if you want the scale to start at zero
+      beginAtZero: false, // Calorie count can be negative as well.
     },
   },
 };
 
+// Get the account information or prompt the user to authorize the website.
 export function useAccount(): typeof addressObject | null {
   const [, setLoading] = useState(address === undefined);
 
@@ -57,6 +61,7 @@ export function useAccount(): typeof addressObject | null {
   return null;
 };
 
+// Gets the dates for the last seven days.
 function getLastSevenDates(): string[] {
   const dates: string[] = [];
   for (let i = 0; i < 7; i++) {
@@ -69,16 +74,24 @@ function getLastSevenDates(): string[] {
 
 function MyApp() {
   const account = useAccount()
+  // Calories to be added.
   const [caloriesToAdd, setCaloriesToAdd] = useState(0);
+  // Calories to be subtracted.
   const [caloriesToSub, setCaloriesToSub] = useState(0);
+  // The daily calorie count after adding or subtracting.
   const [dailyCalories, setDailyCalories] = useState(0);
+  // The date to record the calorie count for.
   const [inputDate, setInputDate] = useState(new Date());
+  // Flag to manage the chart's visibilty.
   const [showChart, setShowChart] = useState(false);
+  // Flag to manage loading indicators.
   const [isAddLoading, setIsAddLoading] = useState(false);
   const [isSubLoading, setIsSubLoading] = useState(false);
   const [isChartLoading, setIsChartLoading] = useState(false);
+  // Message to display in the modal.
   const [modalMsg, setModalMsg] = useState('');
 
+  // The data the chart needs to render.
   const [chartData, setChartData] = useState({
     labels: [''],
     datasets: [
@@ -91,6 +104,7 @@ function MyApp() {
       }
     ]
   })
+  // Helper function to update chart data and trigger a re-render.
   const updateChartData = (newLabels: string[], newData: number[]) => {
     setChartData(prevChartData => ({
       ...prevChartData,
@@ -102,7 +116,7 @@ function MyApp() {
     }));
   };
 
-
+  // Flag to control the modal's visibility.
   const [isModalOpen, setModalOpen] = useState(false);
   const closeModal = () => setModalOpen(false);
 
@@ -112,6 +126,7 @@ function MyApp() {
         <NavBar account={account} />
       </div>
 
+      {/* The date picker that allows selecting a particular date */}
       <div className="container">
         <h2> Select date </h2>
         <DatePicker
@@ -122,6 +137,7 @@ function MyApp() {
           className={"customDatePickerWidth"}
         />
 
+        {/* The numerical input field that contains the calories to add. */}
         <h2> Add calories </h2>
         <input
           type="number"
@@ -136,15 +152,22 @@ function MyApp() {
           <button
             onClick={() => {
               setIsAddLoading(true);
+              // Call the add method of the contract.
               tracker.add({
                 user: account.address,
                 calories: Number(caloriesToAdd),
                 date: inputDate.toISOString().slice(0, 10)
               }).then(tx => {
+                // Sign and send the transaction to the Stellar network.
                 tx.signAndSend().then(val => {
+                  // Modify the daily calories with the return result.
                   setDailyCalories(val.result);
+                  // Display the modal.
                   setModalMsg('Calories added!');
                   setModalOpen(true);
+
+                  // Figure out if the chart data contains this particular date and if it does then
+                  // modify its data with the new calorie count so that it re-renders.
                   if (typeof chartData.labels !== 'undefined' && chartData.labels.length > 0) {
                     const idx = chartData.labels.findIndex((label) => {
                       return label === inputDate.toISOString().slice(0, 10);
@@ -156,6 +179,7 @@ function MyApp() {
                       updateChartData(chartData.labels, newData)
                     }
                   }
+
                   setIsAddLoading(false);
                 }).catch(error => {
                   console.error("error sending tx: ", error);
@@ -172,6 +196,7 @@ function MyApp() {
           </button>
         )}
 
+        {/* The numerical input field that contains the calories to subtract. */}
         <h2> Subtract calories </h2>
         <input
           type="number"
@@ -186,15 +211,22 @@ function MyApp() {
           <button
             onClick={() => {
               setIsSubLoading(true);
+              // Call the subtract method of the contract.
               tracker.subtract({
                 user: account.address,
                 calories: Number(caloriesToSub),
                 date: inputDate.toISOString().slice(0, 10)
               }).then(tx => {
+                // Sign and send the transaction to the Stellar network.
                 tx.signAndSend().then(val => {
+                  // Modify the daily calories with the return result.
                   setDailyCalories(val.result)
+                  // Display the modal.
                   setModalMsg('Calories subtracted!');
                   setModalOpen(true);
+
+                  // Figure out if the chart data contains this particular date and if it does then
+                  // modify its data with the new calorie count so that it re-renders.
                   if (typeof chartData.labels !== 'undefined' && chartData.labels.length > 0) {
                     const idx = chartData.labels.findIndex((label) => {
                       return label === inputDate.toISOString().slice(0, 10);
@@ -206,6 +238,7 @@ function MyApp() {
                       updateChartData(chartData.labels, newData)
                     }
                   }
+
                   setIsSubLoading(false);
                 }).catch(error => {
                   console.error("error sending tx: ", error);
@@ -222,18 +255,24 @@ function MyApp() {
         )}
 
         <p></p>
+
+        {/* The button to get the weekly chart. It displays the calorie count of the last seven days counting back from the selected date. */}
         <button
           onClick={() => {
             setIsChartLoading(true);
+            // Call the subtract method of the contract.
             tracker.get({
               user: account.address,
               dates: getLastSevenDates()
             }).then(tx => {
+              // Sign and send the transaction to the Stellar network.
               tx.signAndSend().then(val => {
-                console.log(val.result)
                 const labels = Array.from(val.result.keys());
                 const data = Array.from(val.result.values());
+
+                // Display the chart.
                 setShowChart(true);
+                // Update the chart data with the new data.
                 updateChartData(labels, data);
                 setIsChartLoading(false);
               }).catch(error => {
@@ -262,6 +301,7 @@ function MyApp() {
   );
 }
 
+// The modal to display after calories are added or subtracted.
 const Modal = ({ isOpen, onClose, calories, date, msg }) => {
   if (!isOpen) {
     return null;
@@ -280,6 +320,7 @@ const Modal = ({ isOpen, onClose, calories, date, msg }) => {
   );
 };
 
+// The top nav bar containig the account's info.
 const NavBar = ({ account }) => {
   return (
     <div className="navbar">
