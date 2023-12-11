@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+# calorie-tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+calorie-tracker is a decentralized application built on Soroban and React. It allows users to
+track their calories for each day. It provides three contract functions:
 
-## Available Scripts
+* `add`: To add calories for a particular date
+* `subtract`: To subtract calories for a particular date
+* `get`: To get the total calorie count for a range of dates
 
-In the project directory, you can run:
+The DAPP lets you add or subtract calories for a date and provides you a weekly chart to make it easy for you to track calories.
 
-### `npm start`
+![chart](docs/media/chart.png)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+![modal](docs/media/modal.png)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Install Dependencies
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+* rustc >= 1.71.0 with the wasm32-unknown-unknown target installed. See https://soroban.stellar.org/docs/getting-started/setup#install-rust.
+  If you have already a lower version, the easiest way to upgrade is to uninstall (rustup self uninstall) and install it again.
+* soroban-cli. See https://soroban.stellar.org/docs/getting-started/setup#install-the-soroban-cli but instead of `cargo install soroban-cli`,
+  run `cargo install_soroban`. This is an alias set up in `.cargo/config.toml`, which pins the local soroban-cli to a specific version.
+  If you add `./bin` to your `$PATH`, then you'll automatically use this version of soroban-cli when you're in this directory.
+* Node.js v18
+* [Freighter Wallet](https://www.freighter.app/) ≥[v5.0.2](https://github.com/stellar/freighter/releases/tag/2.9.1).
+  Or from the Firefox / Chrome extension store. Once installed, enable "Experimental Mode" in the settings (gear icon).
 
-### `npm run build`
+### Contract
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To make it easy to interact with Soroban, the project includes a Makefile that has targets for some frequent commands
+you might need to use. You can learn the exact Soroban CLI commands by going to the respective Make target.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+To build the contract and compile it to a WASM file, run:
+```bash
+make build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Before we can deploy, we need to configure a network to deploy the contract on and create an identity to associate it with:
+```bash
+make network
+make identity
+make fund
+```
 
-### `npm run eject`
+Now we can deploy this WASM file onto the Stellar network:
+```bash
+make deploy
+```
+The contract ID must be now present in the `.soroban/calorie-tracker-id`. You can confirm this by running:
+```bash
+cat ./soroban/calorie-tracker-id
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Now invoke the contract:
+```
+SOURCE=<source> ADDRESS=<address> CALORIES=<calroies> DATE=<date> make add
+SOURCE=<source> ADDRESS=<address> CALORIES=<calroies> DATE=<date> make subtract
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Frontend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+To run the frontend, simply run:
+```
+npm install
+npm run start
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This will install all dependencies, generate the Typscript contract bindings and start the React server.
+Now go to `localhost:3000` and have some fun!
