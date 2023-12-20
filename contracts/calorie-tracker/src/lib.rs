@@ -33,10 +33,11 @@ impl CalorieTracker {
 
         let key = DataKey::Counter(user.clone());
         // The user's calorie records.
-        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().persistent().get(&key);
+        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().instance().get(&key);
         // The total calorie count for the provided date for the user.
         let mut total_calories: i32 = 0;
 
+        env.storage().instance().extend_ttl(103680, 120960);
         if let Some(mut calorie_records) = val {
             // Get the calorie records for the provided date.
             let res: Option<Vec<(u32, Op)>> = calorie_records.get(date.clone());
@@ -52,13 +53,13 @@ impl CalorieTracker {
                     }
                 });
                 calorie_records.set(date, calorie_vals);
-                env.storage().persistent().set(&key, &calorie_records);
+                env.storage().instance().set(&key, &calorie_records);
             // If this is the first calorie record for this date, then create a new list and record
             // it.
             } else {
                 let calorie_vals = vec![&env, (calories, Op::Add)];
                 calorie_records.set(date, calorie_vals);
-                env.storage().persistent().set(&key, &calorie_records);
+                env.storage().instance().set(&key, &calorie_records);
                 total_calories = calories as i32;
             }
         // If this is a new user, then create the map which will contain all their records and
@@ -67,7 +68,7 @@ impl CalorieTracker {
             let mut calorie_records = Map::new(&env);
             let calorie_vals = vec![&env, (calories, Op::Add)];
             calorie_records.set(date, calorie_vals);
-            env.storage().persistent().set(&key, &calorie_records);
+            env.storage().instance().set(&key, &calorie_records);
             total_calories = calories as i32;
         }
         total_calories
@@ -81,9 +82,10 @@ impl CalorieTracker {
         // We need the user to be authenticted.
         user.require_auth();
 
+        env.storage().instance().extend_ttl(103680, 120960);
         let key = DataKey::Counter(user.clone());
         // The user's calorie records.
-        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().persistent().get(&key);
+        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().instance().get(&key);
         // The total calorie count for the provided date for the user.
         let mut total_calories: i32 = 0;
         if let Some(mut calorie_records) = val {
@@ -100,13 +102,13 @@ impl CalorieTracker {
                     }
                 });
                 calorie_records.set(date, calorie_vals);
-                env.storage().persistent().set(&key, &calorie_records);
+                env.storage().instance().set(&key, &calorie_records);
             // If this is the first calorie record for this date, then create a new list and record
             // it.
             } else {
                 let calorie_vals = vec![&env, (calories, Op::Subtract)];
                 calorie_records.set(date, calorie_vals);
-                env.storage().persistent().set(&key, &calorie_records);
+                env.storage().instance().set(&key, &calorie_records);
                 total_calories = calories as i32;
             }
         // If this is a new user, then create the map which will contain all their records and
@@ -115,7 +117,7 @@ impl CalorieTracker {
             let mut calorie_records = Map::new(&env);
             let calorie_vals = vec![&env, (calories, Op::Subtract)];
             calorie_records.set(date, calorie_vals);
-            env.storage().persistent().set(&key, &calorie_records);
+            env.storage().instance().set(&key, &calorie_records);
             total_calories = calories as i32;
         }
 
@@ -127,8 +129,9 @@ impl CalorieTracker {
         user.require_auth();
         let key = DataKey::Counter(user.clone());
 
+        env.storage().instance().extend_ttl(103680, 120960);
         let mut total_calories: Map<String, i32> = Map::new(&env);
-        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().persistent().get(&key);
+        let val: Option<Map<String, Vec<(u32, Op)>>> = env.storage().instance().get(&key);
         if let Some(calorie_records) = val {
             for date in dates {
                 let mut calories: i32 = 0;
